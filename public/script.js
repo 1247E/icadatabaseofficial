@@ -1,26 +1,39 @@
-// public/script.js
 const socket = io();
 const params = new URLSearchParams(window.location.search);
 const room = params.get('room');
 const username = params.get('username') || 'Anonymous';
 
-socket.emit('joinRoom', { room, username });
-
 const form = document.getElementById('messageForm');
 const input = document.getElementById('messageInput');
 const messages = document.getElementById('messages');
 
-form.addEventListener('submit', function(e) {
-  e.preventDefault();
-  if (input.value) {
-    socket.emit('chatMessage', { room, text: input.value });
-    input.value = '';
-  }
+// Join the selected room with username
+socket.emit('joinRoom', { room, username });
+
+// Load chat history on join
+socket.on('chatHistory', (history) => {
+  history.forEach(({ user, text }) => {
+    const item = document.createElement('li');
+    item.innerHTML = `<span class="username">${user}</span>: <span class="text">${text}</span>`;
+    messages.appendChild(item);
+  });
+  messages.scrollTop = messages.scrollHeight;
 });
 
-socket.on('message', function({ user, text }) {
+// Display incoming messages
+socket.on('message', ({ user, text }) => {
   const item = document.createElement('li');
-  item.textContent = `${user}: ${text}`;
+  item.innerHTML = `<span class="username">${user}</span>: <span class="text">${text}</span>`;
   messages.appendChild(item);
-  window.scrollTo(0, document.body.scrollHeight);
+  messages.scrollTop = messages.scrollHeight;
+});
+
+// Send message
+form.addEventListener('submit', function (e) {
+  e.preventDefault();
+  const msg = input.value.trim();
+  if (msg.length > 0) {
+    socket.emit('chatMessage', { room, text: msg });
+    input.value = '';
+  }
 });
