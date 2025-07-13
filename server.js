@@ -1,31 +1,40 @@
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
 const PORT = process.env.PORT || 3000;
 
+const CHAT_HISTORY_FILE = path.join(__dirname, 'chatHistory.json');
+
 app.use(express.static('public'));
 
-// Structure: { roomName: [{ user, text, timestamp }, ...] }
-const chatHistory = {};
+let chatHistory = {};
 
-// Clean up messages older than 24 hours (run every hour)
-const CLEANUP_INTERVAL = 1000 * 60 * 60; // 1 hour
-const MESSAGE_TTL = 1000 * 60 * 60 * 24; // 24 hours
-
-function cleanupOldMessages() {
-  const now = Date.now();
-  for (const room in chatHistory) {
-    chatHistory[room] = chatHistory[room].filter(
-      msg => now - msg.timestamp <= MESSAGE_TTL
-    );
-    // Optional: delete room if empty
-    if (chatHistory[room].length === 0) {
-      delete chatHistory[room];
+// Load chat history from file on startup
+function loadChatHistory() {
+  if (fs.existsSync(CHAT_HISTORY_FILE)) {
+    try {
+      const data = fs.readFileSync(CHAT_HISTORY_FILE, 'utf-8');
+      chatHistory = JSON.parse(data);
+    } catch (err) {
+      console.error('Failed to load chat history:', err);
+      chatHistory = {};
     }
+  } else {
+    chatHistory = {};
   }
 }
-setInterval(cleanupOldMessages, CLEANUP_INTERVAL);
+
+// Save chat history to file
+function saveChatHistory() {
+  fs.writeFile(CHAT_HISTORY_FILE, JSON.stringify(chatHistory, null, 2), (err) => {
+    if (err) console.error('Error saving chat history:', err);
+  });
+}
+
+loadChatHistory();
 
 io.on('connection', (socket) => {
   console.log('User connected');
@@ -35,19 +44,19 @@ io.on('connection', (socket) => {
     socket.join(room);
     console.log(`${socket.username} joined room: ${room}`);
 
-    // Send chat history to this socket
+    // Send chat history of this room to the newly joined client
     const history = chatHistory[room] || [];
     socket.emit('chatHistory', history);
 
     socket.on('chatMessage', ({ room, text }) => {
-      const message = { user: socket.username, text, timestamp: Date.now() };
+      const message = { user: socket.username, text };
       
-      // Store message in chatHistory
+      // Save the message to chatHistory and persist
       if (!chatHistory[room]) chatHistory[room] = [];
       chatHistory[room].push(message);
+      saveChatHistory();
 
-      // Broadcast message to room
-      io.to(room).emit('message', { user: message.user, text: message.text });
+      io.to(room).emit('message', message);
     });
 
     socket.on('disconnect', () => {
