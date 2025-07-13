@@ -1,0 +1,24 @@
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Join Chatroom</title>
+</head>
+<body>
+  <h2>Enter Chatroom</h2>
+  <form id="roomForm">
+    <input type="text" id="username" placeholder="Username" required />
+    <input type="text" id="roomName" placeholder="Room Name" required />
+    <button type="submit">Join</button>
+  </form>
+
+  <script>
+    document.getElementById('roomForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const room = document.getElementById('roomName').value;
+      window.location.href = `/chat.html?room=${encodeURIComponent(room)}&username=${encodeURIComponent(username)}`;
+    });
+  </script>
+</body>
+</html>
