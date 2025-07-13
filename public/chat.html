@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Contract Terminal</title>
+  <link rel="icon" type="image/x-icon" href="icon.png">
   <style>
     * {
       box-sizing: border-box;
@@ -42,7 +43,7 @@
 
     .terminal-box {
       background-color: #111;
-      border: 1px solid #333;
+      border: 1px solid #ffffff;
       border-radius: 10px;
       padding: 30px;
       max-width: 500px;
@@ -76,6 +77,14 @@
       list-style: none;
       white-space: pre-wrap;
       color: rgb(255, 255, 255);
+
+
+      scrollbar-width: none; 
+      -ms-overflow-style: none;  
+    }
+
+    #messages::-webkit-scrollbar {
+      display: none; 
     }
 
     form {
