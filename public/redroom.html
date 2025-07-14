@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>International Contract Agency</title>
+  <link rel="icon" type="image/x-icon" href="icon.png">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #0a0a0a;
+      color: #ffffff;
+      font-family: 'Courier New', monospace;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      background-image:
+        repeating-linear-gradient(
+          0deg,
+          rgba(255, 255, 255, 0.05),
+          rgba(255, 255, 255, 0.05) 1px,
+          transparent 1px,
+          transparent 3px
+        );
+      background-size: 100% 4px; /* control line spacing */
+      animation: moveLines 3s linear infinite;
+    }
+
+    @keyframes moveLines {
+      from {
+        background-position: 0 0;
+      }
+      to {
+        background-position: 0 50px;
+      }
+    }
+
+
+    .container {
+      display: flex;
+      gap: 400px;
+      padding: 40px;
+      max-width: 1600px;
+      width: 100%;
+    }
+
+    .terminal-box {
+      background-color: #111;
+      border: 1px solid #ffffff;
+      border-radius: 10px;
+      padding: 30px;
+      flex: 1;
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+    }
+
+    .terminal-box h1 {
+      font-size: 22px;
+      text-align: center;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      color: #fff;
+    }
+
+    .specialp2 {
+      font-size: 15px;
+      text-align: left;
+      color: #ccc;
+      margin-bottom: 0px;
+    }
+
+    .specialp1 {
+      font-size: 15px;
+      text-align: center;
+      color: #ccc;
+      margin-bottom: 20px;
+    }
+
+    .console-output {
+      background-color: #000;
+      padding: 15px;
+      border: 1px solid #222;
+      color: rgb(255, 255, 255);
+      font-size: 13px;
+      margin-bottom: 20px;
+    }
+
+    .btn, button {
+      width: 100%;
+      background: transparent;
+      border: 1px solid #fff;
+      padding: 10px;
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      margin-bottom: 10px;
+      transition: background 0.3s;
+    }
+
+    .btn:hover, button:hover {
+      background-color: #222;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      background: #000;
+      border: 1px solid #444;
+      color: #fff;
+      margin-bottom: 15px;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid #333;
+      margin: 20px 0;
+    }
+
+    .small {
+      font-size: 10px;
+      color: #888;
+      text-align: center;
+    }
+
+    .link {
+      text-align: center;
+      font-size: 12px;
+      margin-top: 10px;
+    }
+
+    .terms-box {
+      background-color: #111;
+      border: 1px solid #ffffff;
+      border-radius: 10px;
+      padding: 30px;
+      flex: 1;
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+      overflow-y: auto;
+      max-height: 80vh;
+    }
+
+    .terms-box h2 {
+      text-align: center;
+      font-size: 18px;
+      text-transform: uppercase;
+      color: #fff;
+      margin-bottom: 20px;
+    }
+
+    .terms-box p {
+      font-size: 12px;
+      line-height: 1.6;
+      color: #ccc;
+    }
+
+    .background-image {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 400px;
+      height: 400px;
+      background-image: url('ICA.png'); /* your logo here */
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      transform: translate(-50%, -50%);
+      opacity: 0.05; /* slight transparency */
+      pointer-events: none;
+      z-index: 0;
+      filter: grayscale(1) contrast(1.2) brightness(0.9);
+    }
+
+
+  </style>
+</head>
+<body>
+  <div class="background-image"></div>
+  <div class="container">
+
+    <!-- Login Panel -->
+    <div class="terminal-box">
+      <h1>International Contract Agency</h1>
+      <p class="specialp1">You are now connected as an authorized agent<br>with advanced priviliges.</p>
+      <div class="console-output">
+        <p class="specialp2">> echo ICA_SECURE_NETWORK_02<br>> echo WELCOME AGENT<br>> echo AUTHENTICATION REQUIRED<br><br></p>
+      </div>
+
+      <form action="/chat.html" method="GET">
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="text" name="room" placeholder="Authentication Key" required>
+        <button type="submit">ACCESS</button>
+        <br><br><br><br><br>
+      </form>
+
+      <hr>
+      <div class="link">DM @axilonis or @47uv for assistance only if necessary.</div>
+      <br>
+    </div>
+
+<!-- Recent Rooms Panel -->
+<div class="terms-box">
+  <h2>Recent Contracts</h2>
+  <ul id="roomList" style="list-style-type: none; padding: 0; font-size: 14px;">
+    <li>Loading recent rooms...</li>
+  </ul>
+</div>
+
+
+  </div>
+
+<script>
+  fetch('/api/recent-rooms')
+    .then(res => res.json())
+    .then(data => {
+      const list = document.getElementById('roomList');
+      list.innerHTML = '';
+
+      if (data.length === 0) {
+        list.innerHTML = '<li>No rooms yet.</li>';
+        return;
+      }
+
+      data.forEach(room => {
+        const item = document.createElement('li');
+        item.innerHTML = `<strong>${room}</strong>
+          <form action="/chat.html" method="GET" style="margin-top:5px;">
+            <input type="hidden" name="room" value="${room}">
+            <input type="text" name="username" placeholder="Username" required style="margin-bottom:5px;">
+            <button type="submit">Join</button>
+          </form>
+          <hr>`;
+        list.appendChild(item);
+      });
+    })
+    .catch(() => {
+      document.getElementById('roomList').innerHTML = '<li>Error loading rooms.</li>';
+    });
+</script>
+
+</body>
+</html>
