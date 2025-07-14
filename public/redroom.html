@@ -176,6 +176,15 @@
       filter: grayscale(1) contrast(1.2) brightness(0.9);
     }
 
+    #contractList > div::-webkit-scrollbar {
+      display: none;
+    }
+    #contractList > div {
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;     /* Firefox */
+    }
+
+
 
   </style>
 </head>
@@ -202,46 +211,63 @@
       <div class="link">DM @axilonis or @47uv for assistance only if necessary.</div>
       <br>
     </div>
-
-<!-- Recent Rooms Panel -->
-<div class="terms-box">
+  </div>
+<div class="terms-box" id="recentContractsBox">
   <h2>Recent Contracts</h2>
-  <ul id="roomList" style="list-style-type: none; padding: 0; font-size: 14px;">
-    <li>Loading recent rooms...</li>
-  </ul>
+  <div id="contractList"></div>
 </div>
 
-
-  </div>
-
 <script>
-  fetch('/api/recent-rooms')
-    .then(res => res.json())
-    .then(data => {
-      const list = document.getElementById('roomList');
-      list.innerHTML = '';
+  async function loadRecentContracts() {
+    try {
+      const res = await fetch('/api/recent-rooms');
+      const rooms = await res.json();
 
-      if (data.length === 0) {
-        list.innerHTML = '<li>No rooms yet.</li>';
-        return;
+      for (const room of rooms) {
+        const historyRes = await fetch(`/chatHistory/${encodeURIComponent(room)}`);
+        const history = await historyRes.json();
+        const lastThree = history.slice(-3);
+
+        const contractDiv = document.createElement('div');
+        contractDiv.style.border = '1px solid #ff0000';
+        contractDiv.style.padding = '10px';
+        contractDiv.style.marginBottom = '15px';
+        contractDiv.style.backgroundColor = '#000';
+        contractDiv.style.color = '#ff0000';
+        contractDiv.style.borderRadius = '6px';
+        contractDiv.style.overflowY = 'auto';
+        contractDiv.style.maxHeight = '120px';
+        contractDiv.style.scrollbarWidth = 'none'; // Firefox
+        contractDiv.style.msOverflowStyle = 'none'; // IE 10+
+
+        // hide scrollbar (Webkit)
+        contractDiv.style.setProperty('scrollbar-width', 'none');
+
+        const title = document.createElement('h3');
+        title.textContent = `Room: ${room}`;
+        title.style.marginTop = '0';
+        title.style.fontSize = '14px';
+        title.style.color = '#ff0000';
+        contractDiv.appendChild(title);
+
+        lastThree.forEach(msg => {
+          const p = document.createElement('p');
+          p.textContent = `${msg.user}: ${msg.text}`;
+          p.style.margin = '4px 0';
+          p.style.fontSize = '12px';
+          contractDiv.appendChild(p);
+        });
+
+        document.getElementById('contractList').appendChild(contractDiv);
       }
+    } catch (err) {
+      console.error('Failed to load recent contracts:', err);
+    }
+  }
 
-      data.forEach(room => {
-        const item = document.createElement('li');
-        item.innerHTML = `<strong>${room}</strong>
-          <form action="/chat.html" method="GET" style="margin-top:5px;">
-            <input type="hidden" name="room" value="${room}">
-            <input type="text" name="username" placeholder="Username" required style="margin-bottom:5px;">
-            <button type="submit">Join</button>
-          </form>
-          <hr>`;
-        list.appendChild(item);
-      });
-    })
-    .catch(() => {
-      document.getElementById('roomList').innerHTML = '<li>Error loading rooms.</li>';
-    });
+  loadRecentContracts();
 </script>
+
 
 </body>
 </html>
