@@ -13,10 +13,10 @@ app.get('/chat.html', (req, res) => {
   const room = req.query.room;
   const username = req.query.username;
 
-  if (room === 'REDACTED-REDROOM') {
+  if (room === 'R0xPUklPVVNJQ0Ez') {
     // Prevent exposing the secret via query param in the redirect
     const safeUsername = encodeURIComponent(username || 'Anonymous');
-    return res.redirect(`/redroom.html?username=${safeUsername}&room=REDACTED-REDROOM`);
+    return res.redirect(`/redroom.html?username=${safeUsername}&room=R0xPUklPVVNJQ0Ez`);
   }
 
   // Allow default static file serving for other chat.html requests
