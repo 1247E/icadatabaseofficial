@@ -91,6 +91,11 @@ io.on('connection', (socket) => {
 });
 
 // API endpoint to serve recent rooms to redroom.html
+app.get('/chatHistory/:room', (req, res) => {
+  const room = req.params.room;
+  const history = chatHistory[room] || [];
+  res.json(history);
+});
 app.get('/api/recent-rooms', (req, res) => {
   res.json(recentRooms);
 });
